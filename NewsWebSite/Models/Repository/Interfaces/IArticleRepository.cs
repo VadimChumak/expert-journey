@@ -22,7 +22,8 @@ namespace NewsWebSite.Models.Repository
         PagedList<DemoArticle> GetArticleByTags(IEnumerable<Tag> tags, ArticleCriteria cr);
         int Save(Article article);
         bool IsExist(int id);
-        void Delete(int articleId);
+        void Delete(Article a);
+        void Restore(Article a);
     }
 
     public class PagedList<T> : List<T>
