@@ -16,7 +16,11 @@ namespace NewsWebSite.Models.ViewModel
         public DateTime CreateDate { get; set; }
         public DateTime UpdateDate { get; set; }
         public bool Editable { get; set; }
-        public int UserId { get; set; }
+        public int CurUserId { get; set; }
+        public string CurUserName { get; set; }
+        public string CurUserImage { get; set; }
+        public int CommentId { get; set; }
+
 
         [UIHint("TagList")]
         public ISet<Tag> ArticleTags { get; set; }
@@ -35,5 +39,5 @@ namespace NewsWebSite.Models.ViewModel
         }
         public ArticleForView() { }
     }
-    
+
 }

@@ -34,9 +34,11 @@ namespace NewsWebSite.Controllers
             this.repo = repo;
             this.tagRepo = tagRepo;
             this.notifiRepo = notifiRepo;
-            notifiCountCache = new NotificationsService(notifiRepo);
+            notifiCountCache = new NotificationsCountService(notifiRepo);
+
+
         }
-        readonly NotificationsService notifiCountCache;
+        readonly NotificationsCountService notifiCountCache;
         readonly IUserRepository repo;
         readonly ITagRepository tagRepo;
         readonly INotifiactionsRepository notifiRepo;
@@ -59,13 +61,12 @@ namespace NewsWebSite.Controllers
         [HttpPost]
         [AllowAnonymous]
         [ValidateAntiForgeryToken]
-        public async Task<ActionResult> Login(LoginViewModel model, string ReturnUrl = "")
+        public async Task<ActionResult> Login(LoginViewModel model, string returnUrl = "")
         {
             if (!ModelState.IsValid)
             {
                 return View(model);
             }
-
             // This doesn't count login failures towards account lockout
             // To enable password failures to trigger account lockout, change to shouldLockout: true
             var user = new AppUser { UserName = model.Email, Password = model.Password };
@@ -73,7 +74,10 @@ namespace NewsWebSite.Controllers
             switch (result)
             {
                 case SignInStatus.Success:
-                    return Redirect(ReturnUrl);
+                    {
+                        if (string.IsNullOrEmpty(returnUrl) || returnUrl == "/") return RedirectToAction("Index", "News");
+                        return Redirect(returnUrl);
+                    }
                 case SignInStatus.LockedOut:
                     return View("Lockout");
                 case SignInStatus.RequiresVerification:
@@ -105,12 +109,11 @@ namespace NewsWebSite.Controllers
             var lst = notifiRepo.GetList(User.Identity.GetUserId<int>());
             return View(lst);
         }
-
         [HttpGet]
         public ActionResult ChangeImage()
         {
             AppUser currenrUser = repo.GetById(User.Identity.GetUserId<int>());
-            EditUserImageModel editImage = new EditUserImageModel { ImageName = currenrUser.Image, Id=currenrUser.Id };
+            EditUserImageModel editImage = new EditUserImageModel { ImageName = currenrUser.Image, Id = currenrUser.Id };
             return View(editImage);
         }
 
@@ -118,7 +121,7 @@ namespace NewsWebSite.Controllers
         [Authorize]
         public ActionResult ChangeImage(EditUserImageModel editImage)
         {
-            if(!ModelState.IsValid)
+            if (!ModelState.IsValid)
             {
                 return View(editImage);
             }
@@ -133,6 +136,7 @@ namespace NewsWebSite.Controllers
             repo.Save(currentUser);
             return RedirectToAction("Index");
         }
+
 
         [HttpGet]
         public ActionResult EditTags()
@@ -313,6 +317,7 @@ namespace NewsWebSite.Controllers
         [AllowAnonymous]
         public ActionResult Register()
         {
+            if (User.Identity.IsAuthenticated) return RedirectToAction("Index", "News");
             return View();
         }
 

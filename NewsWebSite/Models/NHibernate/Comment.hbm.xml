@@ -13,5 +13,6 @@
     <property name="ReplyCommentId" />
     <property name="Created" />
     <property name="Deleted" />
+    <property name="UserImage" />
   </class>
 </hibernate-mapping>

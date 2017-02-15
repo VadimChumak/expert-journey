@@ -7,15 +7,45 @@
 <h2>Notifications</h2>
 <div class="row" style="margin:10px 0;padding:20px;">
     <div class="col s12 m12 l12 white z-depth-1">
-        <div style="margin:10px 0"></div>
+        <div style="margin:10px 0" id="NotificationsContainer"></div>
         @foreach (var notification in Model)
         {
             <div class="notifiItem@(!notification.Viewed? " notViewed" : "")">
                 <h5><b>@notification.FromWho</b> @(notification.CommentId == 0 ? "прокоментировал вашу новость." : "ответил на ваш комментарий.")</h5>
                 <p>@notification.Message</p>
-                <a href="@Url.Action("Article", "News", new { Id = notification.ArticleId, notifiId = notification.Id })" class="btn">Посмотреть</a>
+                <a href="@Url.Action("Article", "News", new { Id = notification.ArticleId, commentId = notification.CommentId })" class="btn">Посмотреть</a>
             </div>
             <div class="divider" style="margin:10px 0"></div>
         }
     </div>
 </div>
+
+@section scripts{
+    <script type="text/javascript">
+        NotificationsPage = true;
+        function AddNotify(commentId, fromWho, message, articleId)
+        {
+            var templ = $('#notificationBlockTempl').html();
+            templ = templ.split('[Id]').join(articleId);
+            templ = templ.replace('[FromWho]', htmlEncode(fromWho));
+            if (commentId == 0) {
+                templ = templ.replace('[Type]', 'прокоментировал вашу новость.');
+            } else {
+                templ = templ.replace('[Type]', 'ответил на ваш комментарий.');
+            }
+            templ = templ.replace('[Message]', htmlEncode(message));
+            templ = templ.split('[CommentID]').join(commentId);
+            $('#NotificationsContainer').prepend($(templ));
+        }
+    </script>
+
+}
+
+<script type="text/template" id="notificationBlockTempl">
+    <div class="notifiItem notViewed">
+        <h5><b>[FromWho]</b> [Type]</h5>
+        <p>[Message]</p>
+        <a href="@Url.Action("Article", "News")/[Id]?commentId=[CommentID]" class="btn">Посмотреть</a>
+    </div>
+    <div class="divider" style="margin:10px 0"></div>
+</script>

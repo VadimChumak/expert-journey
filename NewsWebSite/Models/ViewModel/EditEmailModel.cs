@@ -8,8 +8,8 @@ namespace NewsWebSite.Models.ViewModel
 {
     public class EditEmailModel
     {
-        [Required( ErrorMessage ="Поле должно быть заполнено!")]
-        [EmailAddress( ErrorMessage ="Введенное значение не является Email адрессом")]
+        [Required(ErrorMessage = "Поле должно быть заполнено!")]
+        [EmailAddress(ErrorMessage = "Введенное значение не является Email адрессом")]
         [Display(Name = "Email")]
         public string Email { get; set; }
     }

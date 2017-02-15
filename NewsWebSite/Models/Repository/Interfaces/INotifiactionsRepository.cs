@@ -13,6 +13,7 @@ namespace NewsWebSite.Models.Repository
         int GetLinesCount(int userId);
         IList<Notification> GetNotViewedList(int userId);
         IList<Notification> GetList(int userId);
+        int ViewByContext(int userId, int commentId, int articleId);
         bool View(int userId, int notifiId);
     }
 }

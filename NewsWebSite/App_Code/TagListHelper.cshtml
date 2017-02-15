@@ -18,3 +18,29 @@
         }
     </select>
 }
+@helper DisabledModelTagsList(ISet<NewsWebSite.Models.Tag> articleTag)
+{
+    <select name="tags" multiple="multiple" style="width:100%" disabled>
+        @if (articleTag != null)
+        {
+            foreach (NewsWebSite.Models.Tag tag in articleTag)
+            {
+                <option value="@tag.TagText" selected>@tag.TagText</option>
+            }
+        }
+    </select>
+}
+@helper TagsList(IEnumerable<NewsWebSite.Models.Tag> allTag)
+{
+
+
+    <select name="tags" multiple="multiple" style="width:100%">
+        @if (allTag != null)
+        {
+            foreach (NewsWebSite.Models.Tag tag in allTag)
+            {
+                <option value="@tag.TagText">@tag.TagText</option>
+            }
+        }
+    </select>
+}

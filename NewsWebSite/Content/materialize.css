@@ -7183,8 +7183,8 @@ input[type=range]:focus::-ms-fill-upper {
 }
 
 .preloader-wrapper.big {
-  width: 64px;
-  height: 64px;
+  width: 100px;
+  height: 100px;
 }
 
 .preloader-wrapper.active {
@@ -7541,7 +7541,7 @@ input[type=range]:focus::-ms-fill-upper {
 .circle-clipper .circle {
   width: 200%;
   height: 100%;
-  border-width: 3px;
+  border-width: 5px;
   /* STROKEWIDTH */
   border-style: solid;
   border-color: inherit;

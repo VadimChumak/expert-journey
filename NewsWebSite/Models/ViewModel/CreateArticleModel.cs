@@ -37,11 +37,11 @@ namespace NewsWebSite.Models.ViewModel
 
         [Display(Name = "Изображение")]
         [ValidImage]
-        [AllowedExtensions(new string[] {".jpg", ".png" })]
+        [AllowedExtensions(new string[] { ".jpg", ".png" })]
         [DataType(DataType.Upload)]
         public HttpPostedFileBase Image { get; set; }
 
-        [Display(Name ="Теги статьи")]
+        [Display(Name = "Теги статьи")]
         [UIHint("TagList")]
         public IEnumerable<Tag> AllTags { get; set; }
     }

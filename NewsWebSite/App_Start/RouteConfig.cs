@@ -38,7 +38,7 @@ namespace NewsWebSite
                 url: "{controller}/{action}/{id}",
                 defaults: new { controller = "News", action = "Index", id = UrlParameter.Optional }
             );
-          
+
         }
     }
 }

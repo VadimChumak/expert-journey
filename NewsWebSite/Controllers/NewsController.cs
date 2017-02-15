@@ -28,16 +28,16 @@ namespace NewsWebSite.Controllers
         readonly INotifiactionsRepository notificationRepo;
         readonly ITagRepository tagRepo;
         readonly IUserRepository userRepo;
-        readonly NotificationsService notifiCountCache;
+        readonly NotificationsCountService notifiCountCache;
         public NewsController(
             IArticleRepository repo,
-            IUserRepository userRepo, 
+            IUserRepository userRepo,
             ITagRepository tagRepo,
             ICommentsRepository commentsRepository,
             INotifiactionsRepository notifiRepo)
         {
             notificationRepo = notifiRepo;
-            notifiCountCache = new NotificationsService(notificationRepo);
+            notifiCountCache = new NotificationsCountService(notificationRepo);
             this.userRepo = userRepo;
             this.tagRepo = tagRepo;
             this.repo = repo;
@@ -78,7 +78,7 @@ namespace NewsWebSite.Controllers
                 a.FullDescription = a.Title;
                 a.UserId = 11;
                 repo.Save(a);
-                
+
             }
             return Content("ok");
         }
@@ -88,6 +88,7 @@ namespace NewsWebSite.Controllers
         [HttpGet]
         public ActionResult Index(bool isUserNews = false, bool isInterestingNews = false)
         {
+            //System.Text.RegularExpressions.Regex.Replace()
             var list = new PagedList<DemoArticle>();
             int userId = 0;
             AppUser currentUser = userRepo.GetById(User.Identity.GetUserId<int>());
@@ -105,7 +106,7 @@ namespace NewsWebSite.Controllers
                     LastId = 0
                 });
             }
-            var model = new ArticleListModel();
+        var model = new ArticleListModel();
 
             model.UsierId = userId;
             model.Type = "default";
@@ -116,26 +117,42 @@ namespace NewsWebSite.Controllers
         }
 
         [HttpGet]
-        public ActionResult Article(int id = 0, int notifiId = 0)
+        public ActionResult Article(int id = 0, int commentId = -1)
         {
             if (id < 1) return HttpNotFound();
 
-            if (notifiId > 0)
-            {
-                if (notificationRepo.View(User.Identity.GetUserId<int>(), notifiId))
-                    notifiCountCache.Update(User.Identity.GetUserId<int>(), -1);
-            }
             var article = repo.GetItem(id);
             if (article == null) return HttpNotFound();
             var viewArticle = new ArticleForView(article);
 
+           
+
+          
+
             if (User.Identity.IsAuthenticated)
             {
+                if (commentId >= 0)
+                {
+                    var count = notificationRepo.ViewByContext(User.Identity.GetUserId<int>(), commentId, id);
+                    if (count > 0)
+                        notifiCountCache.Update(User.Identity.GetUserId<int>(), -count);
+                    viewArticle.CommentId = commentId;
+                }
+                else viewArticle.CommentId = 0;
+                viewArticle.CurUserName = User.Identity.Name.Split('@')[0];
                 if (article.UserId == User.Identity.GetUserId<int>())
                     viewArticle.Editable = true;
-                viewArticle.UserId = User.Identity.GetUserId<int>();
+                viewArticle.CurUserId = User.Identity.GetUserId<int>();
+                var userImage = userRepo.GetUserImage(viewArticle.CurUserId);
+                if (userImage == "Default") viewArticle.CurUserImage = "profile.png";
+                else viewArticle.CurUserImage = viewArticle.CurUserId + "/" + userImage;
             }
-            else viewArticle.UserId = 0;
+            else
+            {
+                viewArticle.CurUserImage = "";
+                viewArticle.CurUserName = "";
+                viewArticle.CurUserId = 0;
+            }
             ViewBag.MaxCommentLength = int.Parse(ConfigurationManager.AppSettings["MaxCommentLength"]);
             return View(viewArticle);
 
@@ -203,7 +220,7 @@ namespace NewsWebSite.Controllers
         [ValidateAntiForgeryToken]
         public ActionResult EditArticle(EditArticleModel edited, string[] tags, string imageCondition)
         {
-           
+
             if (!ModelState.IsValid) return View(edited);
             var baseArticle = repo.GetItem(edited.Id);
 

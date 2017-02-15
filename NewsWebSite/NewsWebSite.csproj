@@ -271,13 +271,15 @@
     <Compile Include="Hubs\CommentsHub.cs" />
     <Compile Include="Models\AccountViewModels.cs" />
     <Compile Include="Models\Article.cs" />
+    <Compile Include="Models\ArticleServiceModels\ArticleListLinker.cs" />
     <Compile Include="Models\Comment.cs" />
     <Compile Include="Models\Notification.cs" />
     <Compile Include="Models\NotifiCount.cs" />
     <Compile Include="Models\Repository\Interfaces\INotifiactionsRepository.cs" />
     <Compile Include="Models\Repository\Interfaces\ITagRepository.cs" />
     <Compile Include="Models\Repository\NotificationRepository.cs" />
-    <Compile Include="Models\Services\NotificationsService.cs" />
+    <Compile Include="Models\Services\ArticleService.cs" />
+    <Compile Include="Models\Services\NotificationsCountService.cs" />
     <Compile Include="Models\Repository\TagRepository.cs" />
     <Compile Include="Models\SignalrModels\CommentInfo.cs" />
     <Compile Include="Models\Repository\CommentsRepository.cs" />
@@ -288,7 +290,6 @@
     <Compile Include="Models\ViewModel\EditEmailModel.cs" />
     <Compile Include="Models\ViewModel\EditPasswordModel.cs" />
     <Compile Include="Models\ViewModel\EditTagsModel.cs" />
-    <Compile Include="Models\ViewModel\EditUserImageModel.cs" />
     <Compile Include="Models\ViewModel\UserViewModel.cs" />
     <Compile Include="Models\ViewModel\ArticleForView.cs" />
     <Compile Include="Models\CustomUserStore.cs" />
@@ -477,8 +478,7 @@
     <Content Include="Content\Images\search_img.png" />
     <Content Include="Content\Images\tiDNCMp.png" />
     <Content Include="Content\main_adaptive.css" />
-    <Content Include="Content\materialize.css" />
-    <Content Include="Content\materialize.min.css" />
+    <Content Include="Content\Materialize.css" />
     <Content Include="Content\Style.css" />
     <Content Include="favicon.ico" />
     <Content Include="fonts\glyphicons-halflings-regular.svg" />
@@ -540,17 +540,17 @@
     <Content Include="Scripts\respond.min.js" />
     <Content Include="Scripts\select2.min.js" />
     <Content Include="Scripts\SideNav.js" />
-    <Content Include="Scripts\timeago.js" />
-    <Content Include="Scripts\timegoRU.js" />
     <Content Include="Scripts\_references.js" />
     <Content Include="Web.config">
       <SubType>Designer</SubType>
     </Content>
     <Content Include="Web.Debug.config">
       <DependentUpon>Web.config</DependentUpon>
+      <SubType>Designer</SubType>
     </Content>
     <Content Include="Web.Release.config">
       <DependentUpon>Web.config</DependentUpon>
+      <SubType>Designer</SubType>
     </Content>
     <Content Include="Views\Web.config" />
     <Content Include="Views\_ViewStart.cshtml" />
@@ -590,9 +590,6 @@
     <Content Include="Views\Account\EditTags.cshtml" />
     <Content Include="Views\Account\Notifications.cshtml" />
     <Content Include="Scripts\masonry.pkgd.min.js" />
-    <Content Include="Views\Account\ChangeImage.cshtml" />
-    <Content Include="Views\Shared\DisplayTemplates\TagList.cshtml" />
-    <Content Include="Views\Shared\EditorTemplates\TagList.cshtml" />
   </ItemGroup>
   <ItemGroup>
     <Folder Include="App_Data\" />
@@ -603,7 +600,9 @@
     <Content Include="fonts\glyphicons-halflings-regular.woff" />
     <Content Include="fonts\glyphicons-halflings-regular.ttf" />
     <Content Include="fonts\glyphicons-halflings-regular.eot" />
-    <Content Include="packages.config" />
+    <Content Include="packages.config">
+      <SubType>Designer</SubType>
+    </Content>
     <None Include="Project_Readme.html" />
     <Content Include="Scripts\jquery-1.10.2.min.map" />
   </ItemGroup>

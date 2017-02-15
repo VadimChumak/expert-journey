@@ -17,6 +17,8 @@ namespace NewsWebSite.Models.Repository
         }
 
 
+
+
         public Notification GetById(int id)
         {
             using (var session = sessionFactory.OpenSession())
@@ -34,6 +36,36 @@ namespace NewsWebSite.Models.Repository
                     .Add(Restrictions.Eq("UserId", userId))
                     .Add(Restrictions.Eq("Viewed", false))
                     .UniqueResult<int>();
+            }
+        }
+
+        public int ViewByContext(int userId, int commentId, int articleId)
+        {
+            using (var session = sessionFactory.OpenSession())
+            {
+                using (var t = session.BeginTransaction())
+                {
+                    var count = session.CreateCriteria<Notification>()
+                        .Add(Restrictions.Eq("UserId", userId))
+                        .Add(Restrictions.Eq("CommentId", commentId))
+                        .Add(Restrictions.Eq("ArticleId", articleId))
+                        .Add(Restrictions.Eq("Viewed", false))
+                        .SetProjection(Projections.RowCount())
+                        .UniqueResult<int>();
+                    if (count > 0)
+                    {
+                       session.CreateQuery(
+                           "update Notification set Viewed = :true where UserId = :userid and CommentId = :commenid and ArticleId = :articleid and Viewed = :false")
+                           .SetParameter("true", true)
+                           .SetParameter("userid", userId)
+                           .SetParameter("commenid", commentId)
+                           .SetParameter("articleid", articleId)
+                           .SetParameter("false", false)
+                           .ExecuteUpdate();
+                    }
+                    t.Commit();
+                    return count;
+                }
             }
         }
 

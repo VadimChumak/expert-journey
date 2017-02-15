@@ -25,10 +25,10 @@ namespace NewsWebSite
             bundles.Add(new ScriptBundle("~/bundles/newsList").Include(
                 "~/Scripts/NewsIndex.js"));
 
-            bundles.Add(new StyleBundle("~/bundles/defaultStyles").Include(
+            bundles.Add(new StyleBundle("~/bundles/DefaultStyles").Include(
                     "~/Content/Style.css",
                     "~/Content/icon.css",
-                    "~/Content/materialize.css",
+                    "~/Content/Materialize.css",
                     "~/Content/selectStyle.css",
                     "~/Content/scroll.css"));
 

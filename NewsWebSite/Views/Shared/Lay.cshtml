@@ -1,19 +1,19 @@
 ﻿@using NewsWebSite.Models.Services
 @using Microsoft.AspNet.Identity
 @{
-    var NotifiCnt = NotificationsService.Instance.GetValue(User.Identity.GetUserId<int>());
+    var NotifiCnt = NotificationsCountService.Instance.GetValue(User.Identity.GetUserId<int>());
 }
 <!DOCTYPE html>
 <html lang="en">
 <head>
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1">
-    @*@Styles.Render("~/Content/Style.css")
-    @Styles.Render("~/Content/select2.min.css")
+    @Styles.Render("~/Content/Style.css")
     @Styles.Render("~/Content/icon.css")
-    @Styles.Render("~/Content/materialize.min.css")
-    @Styles.Render("~/Content/selectStyles.css")*@
-    @Styles.Render("~/bundles/defaultStyles")
+    @Styles.Render("~/Content/Materialize.css")
+    @Styles.Render("~/Content/selectStyle.css")
+    @Styles.Render("~/Content/scroll.css")
+    @*@Styles.Render("~/bundles/defaultStyles")*@
    
     <title> News Portal</title>
    
@@ -85,7 +85,6 @@
     </div>
     @Scripts.Render("~/bundles/default")
     @Scripts.Render("~/signalr/hubs")
-    <script>var connectionStrted = false;</script>
     @RenderSection("scripts", required: false)
     @Scripts.Render("~/Scripts/HubConnect.js")
     @Scripts.Render("~/bundles/formPost")

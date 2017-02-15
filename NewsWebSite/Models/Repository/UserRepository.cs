@@ -46,8 +46,17 @@ namespace NewsWebSite.Models.Repository
 
             }
         }
+        public string GetUserImage(int id)
+        {
+            using (var session = sessionFactory.OpenSession())
+            {
+                return session.CreateCriteria<AppUser>()
+                    .SetProjection(Projections.Property("Image"))
+                    .Add(Restrictions.IdEq(id))
+                    .UniqueResult<string>();
+            }
+        }
 
-       
 
     }
 }

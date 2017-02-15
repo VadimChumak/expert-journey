@@ -3,10 +3,39 @@
     padding: 0;
 }
 
+.editor {
+    margin-right: 20px;
+}
+
+.status {
+    display: inline-block;
+}
+
+.commentName {
+    display: inline-block;
+}
+
+.NameImage {
+    height: 35px;
+    width: auto;
+    position: relative;
+    display: inline-block;
+}
+.invisible {
+    visibility: hidden !important;
+}
 .placeholder {
     height: 10px;
 }
 
+.progressline {
+    top: 12px;
+position: relative;
+    height: 36.36px;
+    display: block;
+    width: 100%;
+    overflow: hidden;
+}
 .notViewed {
     background-color: #DCDCDC;
 }
@@ -24,21 +53,37 @@
     background-color: orangered;
 }
 
+.minloader {
+    position: relative;
+    border: 3px solid #f3f3f3;
+    border-top: 3px solid #3498db;
+    border-radius: 50%;
+    animation: spin 2s linear infinite;
+    padding: 0;
+    width: 30px;
+    height: 30px;
+    left: 0;
+    top: 9px;
+}
+
 #loader {
-    border: 16px solid #f3f3f3;
+    /*border: 16px solid #f3f3f3;
     border-top: 16px solid #3498db;
     border-radius: 50%;
     animation: spin 2s linear infinite;
     margin: 0;
+    padding: 0;*/
+    margin: 0;
     padding: 0;
-    width: 120px;
-    height: 120px;
+    width: 100px;
+    height: 100px;
 }
 
 #loaderBlock {
     padding: 0;
-    width: 120px;
-    height: 120px;
+    width: 100px;
+    height: 100px;
+    overflow: hidden;
     margin: 15px auto;
 }
 
@@ -141,12 +186,11 @@ h1 {
 
 
 .hidden {
-    display: none;
-    height: 0;
-    width: 0;
-    visibility: hidden;
-    z-index: -1;
-    display: none;
+    display: none !important;
+    height: 0 !important;
+    width: 0 !important;
+    visibility: hidden !important;
+    z-index: -1 !important;
     position: absolute;
 }
 
