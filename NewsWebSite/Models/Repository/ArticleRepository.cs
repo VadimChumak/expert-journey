@@ -70,7 +70,8 @@ namespace NewsWebSite.Models.Repository
         {
             using (var session = sessionFactory.OpenSession())
             {
-                var filter = session.CreateCriteria<Article>();
+                var filter = session.CreateCriteria<Article>()
+                    .Add(Restrictions.Eq("IsDeleted", false));
                 if (cr.LastId > 0) filter.Add(Restrictions.Lt("Id", cr.LastId));
                 else filter.SetFirstResult(cr.StartFrom);
 
@@ -112,13 +113,14 @@ namespace NewsWebSite.Models.Repository
         {
             using (var session = sessionFactory.OpenSession())
             {
-                ICriteria filter = session.CreateCriteria<Article>();
+                ICriteria filter = session.CreateCriteria<Article>()
+                    .Add(Restrictions.Eq("IsDeleted", false));
                 if (cr.LastId > 0)
                     filter.Add(Restrictions.Lt("Id", cr.LastId));
 
                 else filter.SetFirstResult(cr.StartFrom);
                 filter.CreateAlias("Tags", "tag");
-                filter.Add(Restrictions.In("tag.Id", tags.Select(m=>m.Id).ToArray()));
+                filter.Add(Restrictions.In("tag.Id", tags.Select(m => m.Id).ToArray()));
 
                 var result = new PagedList<DemoArticle>();
                 var countCreteria = (ICriteria)filter.Clone();
@@ -140,29 +142,45 @@ namespace NewsWebSite.Models.Repository
             }
         }
 
-        public void Delete(int articleId)
+        public void Delete(Article a)
         {
+            a.IsDeleted = true;
             using (var session = sessionFactory.OpenSession())
             {
                 using (var t = session.BeginTransaction())
                 {
-                    session.Delete(session.Load<Article>(articleId));
+                    session.SaveOrUpdate(a);
+                    t.Commit();
+                }
+            }
+        }
+
+        public void Restore(Article a)
+        {
+            a.IsDeleted = false;
+            using (var session = sessionFactory.OpenSession())
+            {
+                using (var t = session.BeginTransaction())
+                {
+                    session.SaveOrUpdate(a);
                     t.Commit();
                 }
             }
         }
     }
+}
 
-    public class ArticleCriteria
+
+
+public class ArticleCriteria
+{
+    public int StartFrom { get; set; }
+    public int Count { get; set; }
+    public int LastId { get; set; }
+    public int UserId { get; set; }
+    public ArticleCriteria()
     {
-        public int StartFrom { get; set; }
-        public int Count { get; set; }
-        public int LastId { get; set; }
-        public int UserId { get; set; }
-        public ArticleCriteria()
-        {
-            Count = 10;
-            UserId = 0;
-        }
+        Count = 10;
+        UserId = 0;
     }
 }
