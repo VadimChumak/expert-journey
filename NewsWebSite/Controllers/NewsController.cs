@@ -28,7 +28,7 @@ namespace NewsWebSite.Controllers
         readonly INotifiactionsRepository notificationRepo;
         readonly ITagRepository tagRepo;
         readonly IUserRepository userRepo;
-        readonly NotificationsCountService notifiCountCache;
+        readonly NotificationsService notifiCountCache;
         public NewsController(
             IArticleRepository repo,
             IUserRepository userRepo,
@@ -37,7 +37,7 @@ namespace NewsWebSite.Controllers
             INotifiactionsRepository notifiRepo)
         {
             notificationRepo = notifiRepo;
-            notifiCountCache = new NotificationsCountService(notificationRepo);
+            notifiCountCache = new NotificationsService(notificationRepo);
             this.userRepo = userRepo;
             this.tagRepo = tagRepo;
             this.repo = repo;
@@ -88,7 +88,6 @@ namespace NewsWebSite.Controllers
         [HttpGet]
         public ActionResult Index(bool isUserNews = false, bool isInterestingNews = false)
         {
-            
             //System.Text.RegularExpressions.Regex.Replace()
             var list = new PagedList<DemoArticle>();
             int userId = 0;
@@ -104,14 +103,15 @@ namespace NewsWebSite.Controllers
             }
             else
             {
-                list = repo.GetArticleByTags(currentUser.Tags, new ArticleCriteria() {
+                list = repo.GetArticleByTags(currentUser.Tags, new ArticleCriteria()
+                {
                     StartFrom = 0,
                     UserId = 0,
                     Count = NumberOfItemsOnPage,
                     LastId = 0
                 });
             }
-        var model = new ArticleListModel();
+            var model = new ArticleListModel();
 
             model.UsierId = userId;
             model.Type = "default";
@@ -126,10 +126,18 @@ namespace NewsWebSite.Controllers
         {
             if (id < 1) return HttpNotFound();
 
+            if (commentId >= 0)
+            {
+                var count = notificationRepo.ViewByContext(User.Identity.GetUserId<int>(), commentId, id);
+                if (count > 0)
+                    notifiCountCache.Update(User.Identity.GetUserId<int>(), -count);
+            }
+
             var article = repo.GetItem(id);
             if (article == null) return HttpNotFound();
+            if (article.IsDeleted == true) return View("ArticleDeleted");
             var viewArticle = new ArticleForView(article);
-            
+
             if (User.Identity.IsAuthenticated)
             {
                 if (commentId >= 0)
@@ -277,7 +285,8 @@ namespace NewsWebSite.Controllers
             var authorId = repo.GetUserId(id);
             if (authorId == User.Identity.GetUserId<int>())
             {
-                repo.Delete(id);
+                var article = repo.GetItem(id);
+                repo.Delete(article);
             }
             return RedirectToAction("Index", "News");
         }
