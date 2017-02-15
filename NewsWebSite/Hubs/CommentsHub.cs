@@ -80,7 +80,7 @@ namespace NewsWebSite.Hubs
             var userIdentityId = Context.User.Identity.GetUserId<int>();
             var name = Context.User.Identity.Name.Split('@')[0];
             var UserImage = usersRepository.GetUserImage(userIdentityId);
-            if (UserImage == "Default") UserImage = "profile.png";
+            if (string.IsNullOrEmpty(UserImage)) UserImage = "profile.png";
             else UserImage = userIdentityId.ToString() + "/" + UserImage;
             if (replyCommentId != 0)
             {

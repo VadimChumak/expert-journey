@@ -23,10 +23,10 @@ namespace NewsWebSite.Controllers
     public class AccountController : Controller
     {
         public AccountController(
-            UserManager<AppUser, int> userManager, 
+            UserManager<AppUser, int> userManager,
             SignInManager<AppUser, int> signInManager,
-            IUserRepository repo, 
-            ITagRepository tagRepo, 
+            IUserRepository repo,
+            ITagRepository tagRepo,
             INotifiactionsRepository notifiRepo)
         {
             UserManager = userManager;
@@ -332,22 +332,21 @@ namespace NewsWebSite.Controllers
             {
 
                 var user = new AppUser { UserName = model.Email };
-                if (model.Image != null)
+
+                var isNull = (model.Image == null);
+                if (!isNull)
                 {
                     user.Image = Path.GetFileName(model.Image.FileName);
-                    FileHelper fileHelper = new FileHelper();
-                    fileHelper.SaveFIle(Server.MapPath(ConfigurationManager.AppSettings["UserImagesFolder"]), model.Image, user.Id);
                 }
                 else user.Image = null;
+
                 var result = await UserManager.CreateAsync(user, model.Password);
                 if (result.Succeeded)
                 {
+
+                    if (!isNull)
+                        (new FileHelper()).SaveFIle(Server.MapPath(ConfigurationManager.AppSettings["UserImagesFolder"]), model.Image, user.Id);
                     await SignInManager.SignInAsync(user, isPersistent: false, rememberBrowser: false);
-                    // For more information on how to enable account confirmation and password reset please visit http://go.microsoft.com/fwlink/?LinkID=320771
-                    // Send an email with this link
-                    // string code = await UserManager.GenerateEmailConfirmationTokenAsync(user.Id);
-                    // var callbackUrl = Url.Action("ConfirmEmail", "Account", new { userId = user.Id, code = code }, protocol: Request.Url.Scheme);
-                    // await UserManager.SendEmailAsync(user.Id, "Confirm your account", "Please confirm your account by clicking <a href=\"" + callbackUrl + "\">here</a>");
                     return RedirectToAction("Index", "News");
                 }
                 AddErrors(result);

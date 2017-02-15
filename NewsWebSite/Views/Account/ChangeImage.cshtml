@@ -1,0 +1,89 @@
+﻿@model NewsWebSite.Models.ViewModel.EditUserImageModel
+
+@{
+    Layout = "~/Views/Shared/Lay.cshtml";
+    ViewBag.Title = "ChangeIamge";
+}
+
+<div class="row " style="margin:10px 0;padding:20px;">
+    @using (Html.BeginForm("ChangeImage", "Account", FormMethod.Post, new
+    {
+        @id = "postForm",
+        @class = "col l6 m10 s12 white z-depth-1 offset-l3 offset-m1",
+        role = "form",
+        style = "padding:30px;",
+        enctype = "multipart/form-data"
+        //,onsubmit = "accept.disabled = true; accept.value = 'Loading...'; return true;"
+    }))
+    {
+        <div class="row">
+            @Html.AntiForgeryToken()
+            <div class="input-field col s12">
+                <p>Изображение</p>
+                @if (Model.ImageName != null)
+                {
+                    <img src="@Url.Content("~/Content/UserImages/")@Model.Id/@Model.ImageName" style="max-height:200px;" id="img-preview" /><br />
+                    <input type="hidden" name="imageCondition" value="Full" id="imageCondition" />
+                    <button type="button" class="waves-effect waves-light btn" id="reset-img-preview" style="margin:15px 0;">Удалить изображение</button><br />
+                }
+                else
+                {
+                    <img src="" style="max-height:200px;" id="img-preview" /><br />
+                    <input type="hidden" name="imageCondition" value="Empty" id="imageCondition" />
+                    <button type="button" class="waves-effect waves-light btn hidden" id="reset-img-preview" style="margin:15px 0;">Удалить изображение</button><br />
+                }
+                @Html.TextBoxFor(model => model.Image, new { type = "file", accept = "image/jpeg,image/png,.jpg,.png", id = "files" })
+                @Html.ValidationMessageFor(model => model.Image)
+            </div>
+        </div>
+        @Html.ValidationSummary(true, "", new { @class = "red-text" })
+        <div class="row">
+            <div class="input-field col s12">
+                <input type="submit" class="waves-effect waves-light btn" value="Сохранить" name="accept" style="margin-bottom:15px;" /><br />
+                <a href="@Url.Action("Index", "Account")">Отмена</a><br />
+            </div>
+        </div>
+    }
+</div>
+
+@section scripts {
+    <script>
+        function DisplayButton() {
+            if (document.getElementById('img-preview').src == '') {
+                document.getElementById('reset-img-preview').setAttribute('class', 'hidden');
+            }
+        }
+        document.addEventListener('load', DisplayButton, false);
+    </script>
+    <script>
+        function ClearImg() {
+            document.getElementById('img-preview').src = '';
+            document.getElementById('files').value = '';
+            document.getElementById('reset-img-preview').setAttribute('class', 'hidden');
+            document.getElementById('imageCondition').setAttribute('value', 'Empty');
+        }
+        document.getElementById('reset-img-preview').addEventListener('click', ClearImg, false);
+    </script>
+    <script type="text/javascript">
+        function showFile(e) {
+            var files = e.target.files;
+            for (var i = 0, f; f = files[i]; i++) {
+                if (!f.type.match('image/*')) continue;
+                var fr = new FileReader();
+                fr.onload = (function (theFile) {
+                    return function (e) {
+                        document.getElementById('img-preview').src = e.target.result;
+                    };
+                })(f);
+
+                fr.readAsDataURL(f);
+            }
+            document.getElementById('reset-img-preview').removeAttribute('class', 'hidden');
+            document.getElementById('reset-img-preview').setAttribute('class', 'waves-effect waves-light btn');
+            document.getElementById('imageCondition').setAttribute('value', 'Full');
+        }
+        document.getElementById('files').addEventListener('change', showFile, false);
+    </script>
+    @Scripts.Render("~/bundles/jqueryval")
+}
+

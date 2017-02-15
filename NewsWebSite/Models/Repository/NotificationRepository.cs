@@ -127,11 +127,12 @@ namespace NewsWebSite.Models.Repository
         {
             using (var session = sessionFactory.OpenSession())
             {
-                return session.CreateCriteria<Notification>()
+                 var count =session.CreateCriteria<Notification>()
                     .SetProjection(Projections.RowCount())
                     .Add(Restrictions.Eq("UserId", userId))
                     .Add(Restrictions.Eq("Viewed", false))
                     .UniqueResult<int>();
+                return count;
             }
         }
     }

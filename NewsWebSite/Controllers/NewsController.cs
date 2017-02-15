@@ -88,9 +88,14 @@ namespace NewsWebSite.Controllers
         [HttpGet]
         public ActionResult Index(bool isUserNews = false, bool isInterestingNews = false)
         {
+            
             //System.Text.RegularExpressions.Regex.Replace()
             var list = new PagedList<DemoArticle>();
             int userId = 0;
+            if (!User.Identity.IsAuthenticated && (isInterestingNews || isUserNews))
+            {
+                return RedirectToRoute("AllNews");
+            }
             AppUser currentUser = userRepo.GetById(User.Identity.GetUserId<int>());
             if (!isInterestingNews)
             {
@@ -124,11 +129,7 @@ namespace NewsWebSite.Controllers
             var article = repo.GetItem(id);
             if (article == null) return HttpNotFound();
             var viewArticle = new ArticleForView(article);
-
-           
-
-          
-
+            
             if (User.Identity.IsAuthenticated)
             {
                 if (commentId >= 0)
@@ -144,7 +145,7 @@ namespace NewsWebSite.Controllers
                     viewArticle.Editable = true;
                 viewArticle.CurUserId = User.Identity.GetUserId<int>();
                 var userImage = userRepo.GetUserImage(viewArticle.CurUserId);
-                if (userImage == "Default") viewArticle.CurUserImage = "profile.png";
+                if (string.IsNullOrEmpty(userImage)) viewArticle.CurUserImage = "profile.png";
                 else viewArticle.CurUserImage = viewArticle.CurUserId + "/" + userImage;
             }
             else
