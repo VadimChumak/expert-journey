@@ -28,7 +28,7 @@ namespace NewsWebSite.Controllers
         readonly INotifiactionsRepository notificationRepo;
         readonly ITagRepository tagRepo;
         readonly IUserRepository userRepo;
-        readonly NotificationsService notifiCountCache;
+        readonly NotificationsCountService notifiCountCache;
         public NewsController(
             IArticleRepository repo,
             IUserRepository userRepo,
@@ -37,7 +37,7 @@ namespace NewsWebSite.Controllers
             INotifiactionsRepository notifiRepo)
         {
             notificationRepo = notifiRepo;
-            notifiCountCache = new NotificationsService(notificationRepo);
+            notifiCountCache = new NotificationsCountService(notificationRepo);
             this.userRepo = userRepo;
             this.tagRepo = tagRepo;
             this.repo = repo;
