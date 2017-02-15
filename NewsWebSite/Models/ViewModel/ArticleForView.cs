@@ -6,6 +6,7 @@ using System.Web;
 
 namespace NewsWebSite.Models.ViewModel
 {
+
     public class ArticleForView
     {
         public int Id { get; set; }
