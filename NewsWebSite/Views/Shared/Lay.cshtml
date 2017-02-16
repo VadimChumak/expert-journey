@@ -1,7 +1,11 @@
 ﻿@using NewsWebSite.Models.Services
 @using Microsoft.AspNet.Identity
 @{
-    var NotifiCnt = NotificationsCountService.Instance.GetValue(User.Identity.GetUserId<int>());
+    var NotifiCnt = 0;
+    if (User.Identity.IsAuthenticated)
+    {
+        NotifiCnt = NotificationsCountService.Instance.GetValue(User.Identity.GetUserId<int>());
+    }
 }
 <!DOCTYPE html>
 <html lang="en">

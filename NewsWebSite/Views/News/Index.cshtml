@@ -4,7 +4,7 @@
 @{
     Layout = "~/Views/Shared/Lay.cshtml";
 }
-<articlelist id="dataArticleList" data-pagecnt="@Model.ArticleList.PageCount" data-showbytags="@Model.Type" data-lastid="@(Model.ArticleList.Count > 0 ? Model.ArticleList[Model.ArticleList.Count - 1].Id : 0)">
+<articlelist id="dataArticleList" data-pagecnt="@Model.ArticleList.PageCount" data-showbytags="@Model.Type" data-lastid="@Model.FirstPageLastId">
     <div class="row" id="news_panel">
         <div id="grid">
             @foreach (var article in Model.ArticleList)
@@ -36,7 +36,10 @@
                             <p>@article.ShortDescription</p>
                             <div class="divider" style="margin:10px 0px;"></div>
                             <p>Создано : @article.CreateDate.ToString("yyyy-MM-dd H:mm:ss")</p>
-                            <p>Обновлено : @article.LastUpdateDate.ToString("yyyy-MM-dd H:mm:ss")</p>
+                            @if (article.CreateDate != article.LastUpdateDate)
+                            {
+                                <p>Обновлено : @article.LastUpdateDate.ToString("yyyy-MM-dd H:mm:ss")</p>
+                            }
                         </div>
                     </div>
                 </div>
@@ -98,7 +101,7 @@
                     <p>[ShortDescription]</p>
                     <div class="divider" style="margin:10px 0px;"></div>
                     <p>Создано : [Date]</p>
-                    <p>Обновлено : [UpdateDate]</p>
+                    <p class="updatedate">Обновлено : [UpdateDate]</p>
                 </div>
             </div>
         </div>

@@ -23,19 +23,21 @@ namespace NewsWebSite.Controllers
         readonly int NumberOfItemsOnPage = int.Parse(ConfigurationManager.AppSettings["NumberOfItemsOnPage"]);
 
         readonly IArticleRepository repo;
-
+        readonly ArticleService service;
         readonly ICommentsRepository commentsRepository;
         readonly INotifiactionsRepository notificationRepo;
         readonly ITagRepository tagRepo;
         readonly IUserRepository userRepo;
         readonly NotificationsCountService notifiCountCache;
         public NewsController(
+
             IArticleRepository repo,
             IUserRepository userRepo,
             ITagRepository tagRepo,
             ICommentsRepository commentsRepository,
             INotifiactionsRepository notifiRepo)
         {
+            service = new ArticleService(repo);
             notificationRepo = notifiRepo;
             notifiCountCache = new NotificationsCountService(notificationRepo);
             this.userRepo = userRepo;
@@ -61,7 +63,8 @@ namespace NewsWebSite.Controllers
                 a.FullDescription = a.Title;
                 a.UserId = 11;
                 a.Image = "Empty";
-                repo.Save(a);
+                int id = repo.Save(a);
+                service.AddArticle(id);
 
             }
             return Content("ok");
@@ -89,7 +92,7 @@ namespace NewsWebSite.Controllers
         public ActionResult Index(bool isUserNews = false, bool isInterestingNews = false)
         {
             //System.Text.RegularExpressions.Regex.Replace()
-            var list = new PagedList<DemoArticle>();
+            var list = new PagedList<Article>();
             int userId = 0;
             if (!User.Identity.IsAuthenticated && (isInterestingNews || isUserNews))
             {
@@ -99,7 +102,7 @@ namespace NewsWebSite.Controllers
             if (!isInterestingNews)
             {
                 if (isUserNews) userId = currentUser.Id;
-                list = repo.GetDemoList(new ArticleCriteria() { StartFrom = 0, UserId = userId, Count = NumberOfItemsOnPage, LastId = 0 });
+                list = service.GetArticleList(new ArticleCriteria() { StartFrom = 0, UserId = userId, Count = NumberOfItemsOnPage, LastId = 0 });
             }
             else
             {
@@ -113,11 +116,12 @@ namespace NewsWebSite.Controllers
             }
             var model = new ArticleListModel();
 
-            model.UsierId = userId;
+            //model.UsierId = userId;
             model.Type = "default";
             if (isInterestingNews) model.Type = "tags";
             else if (isUserNews) model.Type = "my";
             model.ArticleList = list;
+            model.FirstPageLastId = model.ArticleList.Count > 0 ? model.ArticleList[model.ArticleList.Count - 1].Id : 0;
             return View(model);
         }
 
@@ -191,6 +195,7 @@ namespace NewsWebSite.Controllers
                 FullDescription = article.FullDescription,
                 UserId = User.Identity.GetUserId<int>()
             };
+            
             if (article.Image != null)
             {
                 newArticle.Image = article.Image.FileName;
@@ -200,6 +205,7 @@ namespace NewsWebSite.Controllers
             IEnumerable<Tag> articleTags = TagsHelper.CreateTagList(tags, tagRepo);
             TagsHelper.SetTagForModel(newArticle, articleTags);
             var id = repo.Save(newArticle);
+            service.AddArticle(id);
             if (newArticle.Image != null)
             {
                 FileHelper fileHelper = new FileHelper();
@@ -287,6 +293,7 @@ namespace NewsWebSite.Controllers
             {
                 var article = repo.GetItem(id);
                 repo.Delete(article);
+                service.DeleteArticle(article.Id);
             }
             return RedirectToAction("Index", "News");
         }
@@ -297,23 +304,38 @@ namespace NewsWebSite.Controllers
         {
             if (page < 1) return "";
             var cr = new ArticleCriteria() { StartFrom = page * NumberOfItemsOnPage, UserId = 0, Count = n * NumberOfItemsOnPage, LastId = lastId };
+            var byTags = false;
+            var list = new PagedList<Article>();
             if (User.Identity.IsAuthenticated)
             {
                 var userIdentityId = User.Identity.GetUserId<int>();
                 if (type == "tags")
                 {
+                    byTags = true;
                     cr.UserId = userIdentityId;
                     var currentUser = userRepo.GetById(userIdentityId);
                     var tags = currentUser.Tags;
-                    return JsonConvert.SerializeObject(repo.GetArticleByTags(tags, cr));
+                    list = repo.GetArticleByTags(tags, cr);
+
                 }
+                else
                 if (type == "my")
                 {
                     cr.UserId = userIdentityId;
                 }
             }
-            var lst = repo.GetDemoList(cr);
-            return JsonConvert.SerializeObject(lst);
+            if (!byTags) list = service.GetArticleList(cr);
+            return JsonConvert.SerializeObject(list.Select(a => new
+            {
+                a.Id,
+                a.Title,
+                a.UserId,
+                a.Image,
+                a.ShortDescription,
+                a.Tags,
+                a.CreateDate,
+                a.LastUpdateDate
+            }));
         }
 
         [HttpPost]

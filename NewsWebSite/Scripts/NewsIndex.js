@@ -29,6 +29,7 @@ function RequestArticles() {
             inProgress = true;
         }
     }).done(function (data) {
+        console.log(data);
         if (data.length > 0) {
             $.each(data, function (index, data) {
                 var templ = ($("#template").html().split("[Id]").join(data.Id));
@@ -50,6 +51,10 @@ function RequestArticles() {
                 var templ = $(templ);
                 var grid = $('#grid');
                 $('#grid').append(templ).masonry('appended', templ);
+                if (data.CreateDate == data.LastUpdateDate)
+                {
+                    $(templ).find('.updatedate').hide();
+                }
                 $(templ).find("abbr.timeago").timeago();
                 $(templ).find('.tooltipped').tooltip({ delay: 50 });
             });

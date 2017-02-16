@@ -66,20 +66,47 @@ namespace NewsWebSite.Models.Repository
             }
         }
 
-        public PagedList<DemoArticle> GetDemoList(ArticleCriteria cr)
+        public PagedList<Article> GetList(ArticleCriteria criteria)
         {
             using (var session = sessionFactory.OpenSession())
             {
                 var filter = session.CreateCriteria<Article>()
                     .Add(Restrictions.Eq("IsDeleted", false));
-                if (cr.LastId > 0) filter.Add(Restrictions.Lt("Id", cr.LastId));
-                else filter.SetFirstResult(cr.StartFrom);
+                if (criteria.LastId > 0) filter.Add(Restrictions.Lt("Id", criteria.LastId));
+                else filter.SetFirstResult(criteria.StartFrom);
 
-                if (cr.UserId > 0) filter.Add(Restrictions.Eq("UserId", cr.UserId));
+                if (criteria.UserId > 0) filter.Add(Restrictions.Eq("UserId", criteria.UserId));
 
-                var results = new PagedList<DemoArticle>();
                 var countCreteria = (ICriteria)filter.Clone();
-                results.AddRange(filter
+                var LinesCount = countCreteria.SetProjection(Projections.RowCount()).UniqueResult<int>();
+                var PageCount = (int)Math.Ceiling(LinesCount / (double)criteria.Count);
+                var results = PagedList.Create(filter
+                .AddOrder(Order.Desc("Id"))
+                .SetMaxResults(criteria.Count)
+
+                .List<Article>(), PageCount, LinesCount);
+
+                return results;
+            }
+        }
+
+        public PagedList<DemoArticle> GetDemoList(ArticleCriteria criteria)
+        {
+            using (var session = sessionFactory.OpenSession())
+            {
+                var filter = session.CreateCriteria<Article>()
+                    .Add(Restrictions.Eq("IsDeleted", false));
+                if (criteria.LastId > 0) filter.Add(Restrictions.Lt("Id", criteria.LastId));
+                else filter.SetFirstResult(criteria.StartFrom);
+
+                if (criteria.UserId > 0) filter.Add(Restrictions.Eq("UserId", criteria.UserId));
+
+                var countCreteria = (ICriteria)filter.Clone();
+
+                var LinesCount = countCreteria.SetProjection(Projections.RowCount()).UniqueResult<int>();
+                var PageCount = (int)Math.Ceiling(LinesCount / (double)criteria.Count);
+
+                var results = PagedList.Create(filter
                 .SetProjection(Projections.ProjectionList()
                 .Add(Projections.Id(), "Id")
                 .Add(Projections.Property("Title"), "Title")
@@ -88,13 +115,10 @@ namespace NewsWebSite.Models.Repository
                 .Add(Projections.Property("CreateDate"), "CreateDate")
                 .Add(Projections.Property("LastUpdateDate"), "LastUpdateDate"))
                 .AddOrder(Order.Desc("Id"))
-                .SetMaxResults(cr.Count)
+                .SetMaxResults(criteria.Count)
                 .SetResultTransformer(Transformers.AliasToBean<DemoArticle>())
-                .List<DemoArticle>());
-
-                results.LinesCount = countCreteria.SetProjection(Projections.RowCount()).UniqueResult<int>();
-
-                results.PageCount = (int)Math.Ceiling(results.LinesCount / (double)cr.Count);
+                .List<DemoArticle>(), PageCount, LinesCount);
+               
                 return results;
             }
         }
@@ -109,7 +133,7 @@ namespace NewsWebSite.Models.Repository
             }
         }
 
-        public PagedList<DemoArticle> GetArticleByTags(IEnumerable<Tag> tags, ArticleCriteria cr)
+        public PagedList<Article> GetArticleByTags(IEnumerable<Tag> tags, ArticleCriteria cr)
         {
             using (var session = sessionFactory.OpenSession())
             {
@@ -122,22 +146,22 @@ namespace NewsWebSite.Models.Repository
                 filter.CreateAlias("Tags", "tag");
                 filter.Add(Restrictions.In("tag.Id", tags.Select(m => m.Id).ToArray()));
 
-                var result = new PagedList<DemoArticle>();
+                //var result = new PagedList<DemoArticle>();
                 var countCreteria = (ICriteria)filter.Clone();
-                result.AddRange(filter
-                    .SetProjection(Projections.Distinct(Projections.ProjectionList()
-                   .Add(Projections.Id(), "Id")
-                .Add(Projections.Property("Title"), "Title")
-                .Add(Projections.Property("Image"), "Image")
-                .Add(Projections.Property("ShortDescription"), "ShortDescription")
-                .Add(Projections.Property("CreateDate"), "CreateDate")
-                .Add(Projections.Property("LastUpdateDate"), "LastUpdateDate")))
+                var LinesCount = countCreteria.SetProjection(Projections.RowCount()).UniqueResult<int>();
+                var PageCount = (int)Math.Ceiling(LinesCount / (double)cr.Count);
+                var result = PagedList.Create(filter
+                //    .SetProjection(Projections.Distinct(Projections.ProjectionList()
+                //   .Add(Projections.Id(), "Id")
+                //.Add(Projections.Property("Title"), "Title")
+                //.Add(Projections.Property("Image"), "Image")
+                //.Add(Projections.Property("ShortDescription"), "ShortDescription")
+                //.Add(Projections.Property("CreateDate"), "CreateDate")
+                //.Add(Projections.Property("LastUpdateDate"), "LastUpdateDate")))
                 .AddOrder(Order.Desc("Id"))
                 .SetMaxResults(cr.Count)
-                .SetResultTransformer(Transformers.AliasToBean<DemoArticle>())
-                .List<DemoArticle>());
-                result.LinesCount = countCreteria.SetProjection(Projections.RowCount()).UniqueResult<int>();
-                result.PageCount = (int)Math.Ceiling(result.LinesCount / (double)cr.Count);
+                .List<Article>(), PageCount, LinesCount);
+                
                 return result;
             }
         }

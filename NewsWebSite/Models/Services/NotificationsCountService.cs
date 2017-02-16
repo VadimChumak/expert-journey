@@ -24,29 +24,33 @@ namespace NewsWebSite.Models.Services
         public int GetValue(int id)
         {
             MemoryCache memoryCache = MemoryCache.Default;
-            if (memoryCache.Contains("UserNitificationsCount" + id.ToString())) return (int)memoryCache.Get("UserNitificationsCount" + id.ToString());
+            if (memoryCache.Contains("UserNotificationsCount" + id))
+            {
+                var count = (int)memoryCache.Get("UserNotificationsCount" + id);
+                return count;
+            }
             var val = notifiRepo.GetLinesCount(id);
-            memoryCache.Add(id.ToString(), val, DateTime.Now.AddMinutes(20));
+            memoryCache.Add("UserNotificationsCount" + id, val, DateTime.Now.AddMinutes(20));
             return val;
         }
 
         public void Set(int userId, int value)
         {
             MemoryCache memoryCache = MemoryCache.Default;
-            if (!memoryCache.Contains(userId.ToString()))
+            if (!memoryCache.Contains("UserNotificationsCount" + userId))
             {
-                memoryCache.Add("UserNitificationsCount" + userId.ToString(), value, DateTime.Now.AddMinutes(20));
+                memoryCache.Add("UserNotificationsCount" + userId, value, DateTime.Now.AddMinutes(20));
             }
             else
             {
-                memoryCache.Set("UserNitificationsCount" + userId.ToString(), value, DateTime.Now.AddMinutes(20));
+                memoryCache.Set("UserNotificationsCount" + userId, value, DateTime.Now.AddMinutes(20));
             }
         }
 
         public void Update(int userId, int value)
         {
             var newVal = GetValue(userId) + value;
-            if (newVal < 1) newVal = 0;
+            if (newVal < 0) newVal = notifiRepo.GetLinesCount(userId);
             Set(userId, newVal);
         }
 
@@ -55,7 +59,7 @@ namespace NewsWebSite.Models.Services
             MemoryCache memoryCache = MemoryCache.Default;
             if (memoryCache.Contains(id.ToString()))
             {
-                memoryCache.Remove("UserNitificationsCount" + id.ToString());
+                memoryCache.Remove("UserNotificationsCount" + id);
             }
         }
     }
