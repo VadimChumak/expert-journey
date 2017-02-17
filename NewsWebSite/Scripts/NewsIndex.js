@@ -3,8 +3,7 @@ var PageCnt = $(Data).data('pagecnt');
 var Type = $(Data).data('showbytags');
 var LastId = $(Data).data('lastid');
 
-if (PageCnt == 1)
-{
+if (PageCnt == 1) {
     $('#loaderBlock').addClass('hidden');
 }
 
@@ -25,18 +24,20 @@ function RequestArticles() {
         data: { "page": startFrom, "lastId": LastId, "type": Type },
         beforeSend: function () {
             $(loader).removeClass('hidden');
-           // $('body, html').scrollTop($(document).height());
+            // $('body, html').scrollTop($(document).height());
             inProgress = true;
         }
     }).done(function (data) {
+        console.log(data);
         if (data.length > 0) {
             $.each(data, function (index, data) {
                 var templ = ($("#template").html().split("[Id]").join(data.Id));
                 templ = templ.split("[Title]").join(data.Title);
+                templ = templ.split('[Url]').join(data.Url);
                 templ = templ.replace('[ShortDescription]', data.ShortDescription);
                 templ = templ.split("[Date]").join(data.CreateDate.replace("T", " "));
                 templ = templ.split('[UpdateDate]').join(data.LastUpdateDate.replace("T", " "));
-                if (data.Image != 'Empty') {
+                if (data.Image != null) {
                     var image = $('#imageTempl').html();
                     image = image.split('[Id]').join(data.Id);
                     image = image.split('[Image]').join(data.Image);
@@ -44,17 +45,17 @@ function RequestArticles() {
                 }
                 else {
                     var placeholder = $('#placeholderTemplate').html();
-                    placeholder = placeholder.replace('[Id]', data.Id);
+                    placeholder = placeholder.split('[Id]').join(data.Id);
                     templ = templ.replace('[ImagePlaceholder]', placeholder);
                 }
                 var templ = $(templ);
                 var grid = $('#grid');
-                $('#grid').append(templ).masonry('appended', templ);
+                grid = $(grid).append($(templ));
                 $(templ).find("abbr.timeago").timeago();
                 $(templ).find('.tooltipped').tooltip({ delay: 50 });
+                $(grid).masonry('appended', $('#' + data.Id));
+
             });
-            setTimeout(SetTime, 200);
-            setTimeout(CallAdaptive, 300);
             LastId = data[data.length - 1].Id;
         }
 
@@ -88,7 +89,7 @@ function SetTime() {
 $(document).ready(function () {
     CallAdaptive();
     if (startFrom < PageCnt) {
-        if ($(document).height() - 180 <= $(window).height() || $(window).scrollTop() >= $(document).height() - $(window).height() - 2180) {
+        if ($(document).height() - 180 <= $(window).height() || $(window).scrollTop() >= $(document).height() - $(window).height() - 180) {
             RequestArticles();
         }
 

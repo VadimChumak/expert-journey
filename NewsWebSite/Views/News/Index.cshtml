@@ -1,10 +1,9 @@
 ﻿@using NewsWebSite.Models.ViewModel
-@using System.Configuration
 @model ArticleListModel
 @{
     Layout = "~/Views/Shared/Lay.cshtml";
 }
-<articlelist id="dataArticleList" data-pagecnt="@Model.ArticleList.PageCount" data-showbytags="@Model.Type" data-lastid="@(Model.ArticleList.Count > 0 ? Model.ArticleList[Model.ArticleList.Count - 1].Id : 0)">
+<articlelist id="dataArticleList" data-pagecnt="@Model.ArticleList.PageCount" data-showbytags="@Model.Type" data-lastid="@Model.FirstPageLastId">
     <div class="row" id="news_panel">
         <div id="grid">
             @foreach (var article in Model.ArticleList)
@@ -14,20 +13,20 @@
                         @if (article.Image != null)
                         {
                             <div class="card-image waves-effect waves-block waves-light">
-                                <a id="Title-@article.Id" href="@Url.Action("Article", new { Title = article.Title, Id = article.Id })">
+                                <a id="Title-@article.Id" href="@Url.RouteUrl("WithTitle", new { title = article.Url, id = article.Id })">
                                     <img class="activator" src="@Url.Content("~/Content/ArticleImages/")@article.Id/@article.Image" style="object-fit:cover; object-position:center">
                                 </a>
                             </div>
                         }
                         else
                         {
-                            <a id="Title-@article.Id" href="@Url.Action("Article", new { Title = article.Title, Id = article.Id })">
+                            <a id="Title-@article.Id" href="@Url.RouteUrl("WithTitle", new { title = article.Url, id = article.Id })">
                                 <div class="placeholder"></div>
                             </a>
                         }
                         <div class="card-content">
                             <span class="card-title activator grey-text text-darken-4 truncate"><i class="material-icons right">more_vert</i>@article.Title</span>
-                            <p><a href="@Url.Action("Article", new { Title = article.Title, Id = article.Id })" id="More-@article.Id">Подробнее</a></p>
+                            <p><a href="@Url.RouteUrl("WithTitle", new { title = article.Url, id = article.Id })" id="More-@article.Id">Подробнее</a></p>
                             <div class="divider" style="margin:10px 0;"></div>
                             <abbr class="timeago tooltipped blue-grey-text" style="font-weight:bold; height:30px;" data-position="bottom" data-delay="50" data-tooltip="@article.LastUpdateDate.ToString("yyyy-MM-dd H:mm:ss")"></abbr>
                         </div>
@@ -36,7 +35,10 @@
                             <p>@article.ShortDescription</p>
                             <div class="divider" style="margin:10px 0px;"></div>
                             <p>Создано : @article.CreateDate.ToString("yyyy-MM-dd H:mm:ss")</p>
-                            <p>Обновлено : @article.LastUpdateDate.ToString("yyyy-MM-dd H:mm:ss")</p>
+                            @if (article.CreateDate != article.LastUpdateDate)
+                            {
+                                <p>Обновлено : @article.LastUpdateDate.ToString("yyyy-MM-dd H:mm:ss")</p>
+                            }
                         </div>
                     </div>
                 </div>
@@ -73,7 +75,7 @@
     <script type="text/template" id="imageTempl">
         <div class="card-image waves-effect waves-block waves-light">
             <a id="Title-[Id]" href="@Url.Action("Article")/[Id]">
-                <img class="activator" src="@{Url.Content(ConfigurationManager.AppSettings["ArticleImagesFolder"]);}[Id]/[Image]" style="object-fit:cover; object-position:center">
+                <img class="activator" src="@Url.Content("~/Content/ArticleImages")/[Id]/[Image]" style="object-fit:cover; object-position:center">
             </a>
         </div>
     </script>
@@ -83,22 +85,21 @@
         </a>
     </script>
     <script type="text/template" id="template">
-        <div class="col l6 m6 s12 grid-item">
-            <div class="card hoverable" style="padding:5px;margin:0.5rem 0rem 1rem 0rem;">
+        <div id="[Id]" class="col l6 m6 s12 grid-item">
+            <div class="card hoverable" style="padding:5px;">
                 [ImagePlaceholder]
-
                 <div class="card-content">
                     <span class="card-title activator grey-text text-darken-4 truncate">[Title]<i class="material-icons right">more_vert</i></span>
-                    <p><a href="@Url.Action("Article")/[Id]" id="More-[Id]">Подробнее</a></p>
+                    <p><a href="@Request.Url.GetLeftPart(UriPartial.Authority)/News/[Url]-[Id]" id="More-[Id]">Подробнее</a></p>
                     <div class="divider" style="margin:10px 0;"></div>
-                    <abbr class="timeago tooltipped blue-grey-text" style="font-weight:bold;display:inline-block; height:30px" data-position="bottom" data-delay="50" data-tooltip="[UpdateDate]"></abbr>
+                    <abbr class="timeago tooltipped blue-grey-text" @*style="font-weight:bold;display:inline-block; height:30px"*@ data-position="bottom" data-delay="50" data-tooltip="[UpdateDate]"></abbr>
                 </div>
                 <div class="card-reveal">
                     <span class="card-title grey-text text-darken-4 truncate">[Title]<i class="material-icons right">close</i></span>
                     <p>[ShortDescription]</p>
                     <div class="divider" style="margin:10px 0px;"></div>
                     <p>Создано : [Date]</p>
-                    <p>Обновлено : [UpdateDate]</p>
+                    <p class="updatedate">Обновлено : [UpdateDate]</p>
                 </div>
             </div>
         </div>

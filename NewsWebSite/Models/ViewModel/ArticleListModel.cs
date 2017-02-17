@@ -8,8 +8,9 @@ namespace NewsWebSite.Models.ViewModel
 {
     public class ArticleListModel
     {
-        public PagedList<DemoArticle> ArticleList { get; set; }
-        public int UsierId { get; set; }
+        public PagedList<Article> ArticleList { get; set; }
+        //public int UsierId { get; set; }
         public string Type { get; set; } = "default";
+        public int FirstPageLastId { get; set; }
     }
 }

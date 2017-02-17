@@ -15,40 +15,51 @@ using System.Configuration;
 using Microsoft.AspNet.Identity;
 using NewsWebSite.Models.Repository;
 using NewsWebSite.Models.Services;
+using System.Runtime.Caching;
 
 namespace NewsWebSite.Controllers
 {
     public class NewsController : Controller
     {
         readonly int NumberOfItemsOnPage = int.Parse(ConfigurationManager.AppSettings["NumberOfItemsOnPage"]);
-
-        readonly IArticleRepository repo;
-
+        readonly IArticleRepository articleRepository;
         readonly ICommentsRepository commentsRepository;
         readonly INotifiactionsRepository notificationRepo;
         readonly ITagRepository tagRepo;
         readonly IUserRepository userRepo;
+
+        readonly ArticleService articleService;
         readonly NotificationsCountService notifiCountCache;
         public NewsController(
+            NotificationsCountService notifiCountCache,
             IArticleRepository repo,
             IUserRepository userRepo,
             ITagRepository tagRepo,
             ICommentsRepository commentsRepository,
-            INotifiactionsRepository notifiRepo)
+            ArticleService articleService,
+        INotifiactionsRepository notifiRepo)
         {
+            this.notifiCountCache = notifiCountCache;
+            this.articleService = articleService;
+            //service = new ArticleService(repo);
             notificationRepo = notifiRepo;
-            notifiCountCache = new NotificationsCountService(notificationRepo);
             this.userRepo = userRepo;
             this.tagRepo = tagRepo;
-            this.repo = repo;
+            articleRepository = repo;
             this.commentsRepository = commentsRepository;
         }
 
-
-
-
         #region ForDebug
-
+        public string ClearCache()
+        {
+            var cache = MemoryCache.Default;
+            if (cache.Contains("allNewsList"))
+            {
+                cache.Remove("allNewsList");
+                return "contains";
+            }
+            return "nocache";
+        }
 
         [HttpGet]
         public ActionResult CreateNoImageLines(int n = 0)
@@ -60,8 +71,8 @@ namespace NewsWebSite.Controllers
                 a.Title = i.ToString();
                 a.FullDescription = a.Title;
                 a.UserId = 11;
-                a.Image = "Empty";
-                repo.Save(a);
+                a.Image = null;
+                articleService.AddArticle(a);
 
             }
             return Content("ok");
@@ -76,8 +87,9 @@ namespace NewsWebSite.Controllers
                 var a = new Article();
                 a.Title = i.ToString();
                 a.FullDescription = a.Title;
+                a.Image = null;
                 a.UserId = 11;
-                repo.Save(a);
+                articleService.AddArticle(a);
 
             }
             return Content("ok");
@@ -89,7 +101,7 @@ namespace NewsWebSite.Controllers
         public ActionResult Index(bool isUserNews = false, bool isInterestingNews = false)
         {
             //System.Text.RegularExpressions.Regex.Replace()
-            var list = new PagedList<DemoArticle>();
+            var list = new PagedList<Article>();
             int userId = 0;
             if (!User.Identity.IsAuthenticated && (isInterestingNews || isUserNews))
             {
@@ -99,11 +111,11 @@ namespace NewsWebSite.Controllers
             if (!isInterestingNews)
             {
                 if (isUserNews) userId = currentUser.Id;
-                list = repo.GetDemoList(new ArticleCriteria() { StartFrom = 0, UserId = userId, Count = NumberOfItemsOnPage, LastId = 0 });
+                list = articleService.GetArticleList(new ArticleCriteria() { StartFrom = 0, UserId = userId, Count = NumberOfItemsOnPage, LastId = 0 });
             }
             else
             {
-                list = repo.GetArticleByTags(currentUser.Tags, new ArticleCriteria()
+                list = articleRepository.GetArticleByTags(currentUser.Tags, new ArticleCriteria()
                 {
                     StartFrom = 0,
                     UserId = 0,
@@ -113,11 +125,12 @@ namespace NewsWebSite.Controllers
             }
             var model = new ArticleListModel();
 
-            model.UsierId = userId;
+            //model.UsierId = userId;
             model.Type = "default";
             if (isInterestingNews) model.Type = "tags";
             else if (isUserNews) model.Type = "my";
             model.ArticleList = list;
+            model.FirstPageLastId = model.ArticleList.Count > 0 ? model.ArticleList[model.ArticleList.Count - 1].Id : 0;
             return View(model);
         }
 
@@ -133,7 +146,7 @@ namespace NewsWebSite.Controllers
                     notifiCountCache.Update(User.Identity.GetUserId<int>(), -count);
             }
 
-            var article = repo.GetItem(id);
+            var article = articleService.GetArticleById(id);
             if (article == null) return HttpNotFound();
             if (article.IsDeleted == true) return View("ArticleDeleted");
             var viewArticle = new ArticleForView(article);
@@ -191,6 +204,7 @@ namespace NewsWebSite.Controllers
                 FullDescription = article.FullDescription,
                 UserId = User.Identity.GetUserId<int>()
             };
+
             if (article.Image != null)
             {
                 newArticle.Image = article.Image.FileName;
@@ -199,13 +213,15 @@ namespace NewsWebSite.Controllers
             newArticle.Tags.Clear();
             IEnumerable<Tag> articleTags = TagsHelper.CreateTagList(tags, tagRepo);
             TagsHelper.SetTagForModel(newArticle, articleTags);
-            var id = repo.Save(newArticle);
+            newArticle.Url = UrlHelper.ValiateUrl(newArticle.Title);
+            var id = articleService.AddArticle(newArticle);
             if (newArticle.Image != null)
             {
                 FileHelper fileHelper = new FileHelper();
                 fileHelper.SaveFIle(Server.MapPath(ConfigurationManager.AppSettings["ArticleImagesFolder"]), article.Image, id);
             }
-            return RedirectToAction("Article", new { Title = article.Title, Id = id });
+
+            return RedirectToAction("Article", new { Title = newArticle.Url, Id = id });
         }
 
 
@@ -214,7 +230,7 @@ namespace NewsWebSite.Controllers
         public ActionResult EditArticle(int id = 0)
         {
             if (id < 1) return HttpNotFound();
-            var article = repo.GetItem(id);
+            var article = articleRepository.GetItem(id);
             if (article == null) return HttpNotFound();
             EditArticleModel editArticle = new EditArticleModel(article);
             editArticle.AllTags = tagRepo.GetAllTags();
@@ -227,16 +243,16 @@ namespace NewsWebSite.Controllers
         [Authorize]
         [ValidateInput(false)]
         [ValidateAntiForgeryToken]
-        public ActionResult EditArticle(EditArticleModel edited, string[] tags, string imageCondition)
+        public ActionResult EditArticle(EditArticleModel edited, string[] tags, string imageState)
         {
 
             if (!ModelState.IsValid) return View(edited);
-            var baseArticle = repo.GetItem(edited.Id);
+            var baseArticle = articleRepository.GetItem(edited.Id);
 
             if (baseArticle == null || baseArticle.UserId != User.Identity.GetUserId<int>()) return HttpNotFound();
 
             var changesExist = false;
-            if (imageCondition == "Empty")
+            if (imageState == "Empty")
             {
                 baseArticle.Image = null;
                 changesExist = true;
@@ -275,23 +291,27 @@ namespace NewsWebSite.Controllers
                 TagsHelper.SetTagForModel(baseArticle, newTags);
                 changesExist = true;
             }
-            if (changesExist) repo.Save(baseArticle);
-            return RedirectToAction("Article", new { Title = edited.Title, Id = edited.Id });
+            if (changesExist)
+            {
+                articleService.EditArticle(baseArticle);
+            }
+            return RedirectToAction("Article", new { Title = baseArticle.Url, Id = edited.Id });
         }
 
       
 
         [HttpGet]
         [Authorize]
-        public ActionResult Delete(int articleid)
+        public ActionResult Delete(int id)
         {
-            var authorId = repo.GetUserId(articleid);
+            var authorId = articleRepository.GetUserId(id);
             if (authorId == User.Identity.GetUserId<int>())
             {
-                var article = repo.GetItem(articleid);
-                repo.Delete(article);
+                var article = articleRepository.GetItem(id);
+                //articleRepository.Delete(article);
+                articleService.DeleteArticle(article);
             }
-            return View("Restore", articleid);
+            return View("Restore", id));
         }
 
         [Authorize]
@@ -314,23 +334,38 @@ namespace NewsWebSite.Controllers
         {
             if (page < 1) return "";
             var cr = new ArticleCriteria() { StartFrom = page * NumberOfItemsOnPage, UserId = 0, Count = n * NumberOfItemsOnPage, LastId = lastId };
+            var byTags = false;
+            var list = new PagedList<Article>();
             if (User.Identity.IsAuthenticated)
             {
                 var userIdentityId = User.Identity.GetUserId<int>();
                 if (type == "tags")
                 {
+                    byTags = true;
                     cr.UserId = userIdentityId;
                     var currentUser = userRepo.GetById(userIdentityId);
                     var tags = currentUser.Tags;
-                    return JsonConvert.SerializeObject(repo.GetArticleByTags(tags, cr));
+                    list = articleRepository.GetArticleByTags(tags, cr);
+
                 }
+                else
                 if (type == "my")
                 {
                     cr.UserId = userIdentityId;
                 }
             }
-            var lst = repo.GetDemoList(cr);
-            return JsonConvert.SerializeObject(lst);
+            if (!byTags) list = articleService.GetArticleList(cr);
+            return JsonConvert.SerializeObject(list.Select(a => new
+            {
+                a.Id,
+                a.Title,
+                a.UserId,
+                a.Image,
+                a.ShortDescription,
+                a.CreateDate,
+                a.LastUpdateDate,
+                a.Url
+            }));
         }
 
         [HttpPost]

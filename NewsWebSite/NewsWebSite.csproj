@@ -309,6 +309,7 @@
     <Compile Include="Properties\AssemblyInfo.cs" />
     <Compile Include="Startup.cs" />
     <Compile Include="TagsHelper.cs" />
+    <Compile Include="UrlHelper.cs" />
   </ItemGroup>
   <ItemGroup>
     <Content Include="ckeditor\adapters\jquery.js" />
@@ -541,6 +542,8 @@
     <Content Include="Scripts\respond.min.js" />
     <Content Include="Scripts\select2.min.js" />
     <Content Include="Scripts\SideNav.js" />
+    <Content Include="Scripts\timeago.js" />
+    <Content Include="Scripts\timegoRU.js" />
     <Content Include="Scripts\_references.js" />
     <Content Include="Web.config">
       <SubType>Designer</SubType>
@@ -592,8 +595,8 @@
     <Content Include="Views\Account\Notifications.cshtml" />
     <Content Include="Scripts\masonry.pkgd.min.js" />
     <Content Include="Views\Account\ChangeImage.cshtml" />
-    <Content Include="Views\News\ArticleDeleted.cshtml" />
-    <Content Include="Views\News\Restore.cshtml" />
+    <Content Include="Views\Shared\DisplayTemplates\TagList.cshtml" />
+    <Content Include="Views\Shared\EditorTemplates\TagList.cshtml" />
   </ItemGroup>
   <ItemGroup>
     <Folder Include="App_Data\" />

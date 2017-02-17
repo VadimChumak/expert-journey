@@ -15,7 +15,7 @@ namespace NewsWebSite
 
             routes.MapRoute(
                name: "WithTitle",
-               url: "{controller}/{title}-{id}",
+               url: "News/{title}-{id}",
                defaults: new { controller = "News", action = "Article" }
            );
             routes.MapRoute(

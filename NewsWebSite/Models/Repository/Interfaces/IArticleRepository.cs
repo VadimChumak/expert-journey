@@ -19,7 +19,8 @@ namespace NewsWebSite.Models.Repository
         Article GetItem(int id);
         int GetCountOfLines();
         PagedList<DemoArticle> GetDemoList(ArticleCriteria cr);
-        PagedList<DemoArticle> GetArticleByTags(IEnumerable<Tag> tags, ArticleCriteria cr);
+        PagedList<Article> GetList(ArticleCriteria cr);
+        PagedList<Article> GetArticleByTags(IEnumerable<Tag> tags, ArticleCriteria cr);
         int Save(Article article);
         bool IsExist(int id);
         void Delete(Article a);
@@ -44,11 +45,12 @@ namespace NewsWebSite.Models.Repository
 
     public class PagedList
     {
-        public static PagedList<T> Create<T>(IEnumerable<T> list, int pageCount)
+        public static PagedList<T> Create<T>(IEnumerable<T> list, int pageCount, int linesCount)
         {
             return new PagedList<T>(list)
             {
-                PageCount = pageCount
+                PageCount = pageCount,
+                LinesCount = linesCount
             };
         }
     }
