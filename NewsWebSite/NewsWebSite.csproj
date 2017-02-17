@@ -597,6 +597,9 @@
     <Content Include="Views\Account\ChangeImage.cshtml" />
     <Content Include="Views\Shared\DisplayTemplates\TagList.cshtml" />
     <Content Include="Views\Shared\EditorTemplates\TagList.cshtml" />
+    <Content Include="Views\News\Restore.cshtml" />
+    <Content Include="Views\News\Delete.cshtml" />
+    <Content Include="Views\News\ArticleDeleted.cshtml" />
   </ItemGroup>
   <ItemGroup>
     <Folder Include="App_Data\" />
