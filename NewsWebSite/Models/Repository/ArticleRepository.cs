@@ -118,7 +118,7 @@ namespace NewsWebSite.Models.Repository
                 .SetMaxResults(criteria.Count)
                 .SetResultTransformer(Transformers.AliasToBean<DemoArticle>())
                 .List<DemoArticle>(), PageCount, LinesCount);
-               
+
                 return results;
             }
         }
@@ -151,17 +151,21 @@ namespace NewsWebSite.Models.Repository
                 var LinesCount = countCreteria.SetProjection(Projections.RowCount()).UniqueResult<int>();
                 var PageCount = (int)Math.Ceiling(LinesCount / (double)cr.Count);
                 var result = PagedList.Create(filter
-                //    .SetProjection(Projections.Distinct(Projections.ProjectionList()
-                //   .Add(Projections.Id(), "Id")
-                //.Add(Projections.Property("Title"), "Title")
-                //.Add(Projections.Property("Image"), "Image")
-                //.Add(Projections.Property("ShortDescription"), "ShortDescription")
-                //.Add(Projections.Property("CreateDate"), "CreateDate")
-                //.Add(Projections.Property("LastUpdateDate"), "LastUpdateDate")))
+                .SetProjection(Projections.Distinct(Projections.ProjectionList()
+                .Add(Projections.Id(), "Id")
+                .Add(Projections.Property("Title"), "Title")
+                .Add(Projections.Property("Image"), "Image")
+                .Add(Projections.Property("ShortDescription"), "ShortDescription")
+                .Add(Projections.Property("FullDescription"), "FullDescription")
+                .Add(Projections.Property("Url"), "Url")
+                .Add(Projections.Property("CreateDate"), "CreateDate")
+                .Add(Projections.Property("LastUpdateDate"), "LastUpdateDate")
+                .Add(Projections.Property("UserId"), "UserId")))
                 .AddOrder(Order.Desc("Id"))
                 .SetMaxResults(cr.Count)
+                .SetResultTransformer(Transformers.AliasToBean<Article>())
                 .List<Article>(), PageCount, LinesCount);
-                
+
                 return result;
             }
         }

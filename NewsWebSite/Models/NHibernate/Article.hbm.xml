@@ -13,6 +13,7 @@
     <property name="LastUpdateDate" />
     <property name="UserId" />
     <property name="IsDeleted" />
+    <property name="Url" />
     <set name="Tags" table="Tag_Article"  lazy="false">
       <key column="ArticleId"/>
       <many-to-many class="Tag" column="TagId" />

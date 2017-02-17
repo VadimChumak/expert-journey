@@ -20,6 +20,7 @@ namespace NewsWebSite.App_Start
     using Microsoft.Owin.Security;
     using Microsoft.AspNet.SignalR;
     using NinjectDependencyResolvers;
+    using Models.Services;
 
     public static class NinjectWebCommon
     {
@@ -81,6 +82,9 @@ namespace NewsWebSite.App_Start
             kernel.Bind<UserManager<AppUser, int>>().To<UserManager<AppUser, int>>();
             kernel.Bind<SignInManager<AppUser, int>>().To<SignInManager<AppUser, int>>();
             kernel.Bind<IUserStore<AppUser, int>>().To<CustomUserStore>();
+            kernel.Bind<NotificationsCountService>().To<NotificationsCountService>();
+            kernel.Bind<ArticleService>().To<ArticleService>();
+
             kernel.Bind<IAuthenticationManager>().ToMethod(_ => HttpContext.Current.GetOwinContext().Authentication);
 
             kernel.Bind<ISessionFactory>().ToMethod(context =>

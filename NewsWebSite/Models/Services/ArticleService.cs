@@ -56,15 +56,16 @@ namespace NewsWebSite.Models.Services
                     {
                         result.AddRange(MakeArticleListFromCache(linkerList, lastIdIndex + 1, existedInListCount));
                     }
-                    result.AddRange(articleRepo.GetList(new ArticleCriteria()
+                    var fromRepo = articleRepo.GetList(new ArticleCriteria()
                     {
                         StartFrom = 0,
                         UserId = 0,
                         LastId = linkerList.Last(),
                         Count = ItemsOnPageCount - existedInListCount
-                    }));
+                    });
+                    result.AddRange(fromRepo as List<Article>);
                     foreach (var a in result) SaveToCache("article" + a.Id, a);
-                    linkerList.AddRange(result.Select(i => i.Id));
+                    linkerList.AddRange(fromRepo.Select(i => i.Id));
                     memoryCache.Set(key, linkerList, DateTime.Now.AddMinutes(60));
                     return new PagedList<Article>(result);
                     // 0 1 2 3 4 5 6 7 8 9
@@ -80,7 +81,8 @@ namespace NewsWebSite.Models.Services
         {
             if (!memoryCache.Contains(key))
             {
-                memoryCache.Add(key, item, DateTime.Now.AddMinutes(20));
+                memoryCache.Add(key, item, DateTime.Now.AddMinutes(50));
+
                 return true;
             }
             //  memoryCache.Set(key, item, DateTime.Now.AddMinutes(20));
@@ -103,29 +105,47 @@ namespace NewsWebSite.Models.Services
             if (!memoryCache.Contains(key))
             {
                 var article = articleRepo.GetItem(id);
-                memoryCache.Add(key, article, DateTime.Now.AddMinutes(20));
+                memoryCache.Add(key, article, DateTime.Now.AddMinutes(60));
                 return article;
             }
             return memoryCache.Get(key) as Article;
         }
-        public void AddArticle(int id)
+        public int AddArticle(Article article)
         {
-            if (!memoryCache.Contains("allNewsList")) return;
-            var linkerList = memoryCache.Get("allNewsList") as PagedList<int>;
-            linkerList.Insert(0, id);
-            linkerList.LinesCount++;
-            linkerList.PageCount = (int)Math.Ceiling(linkerList.LinesCount / (double)ItemsOnPageCount);
-            memoryCache.Set("allNewsList", linkerList, DateTime.Now.AddMinutes(60));
+           
+            int id = articleRepo.Save(article);
+            if (memoryCache.Contains("allNewsList"))
+            {
+                var linkerList = memoryCache.Get("allNewsList") as PagedList<int>;
+                linkerList.Insert(0, id);
+                linkerList.LinesCount++;
+                linkerList.PageCount = (int)Math.Ceiling(linkerList.LinesCount / (double)ItemsOnPageCount);
+                memoryCache.Set("allNewsList", linkerList, DateTime.Now.AddMinutes(60));
+            }
+            return id;
         }
-        public void DeleteArticle(int id)
+        public int EditArticle(Article article)
         {
+            RemoveFromCache("article" + article.Id);
+            return articleRepo.Save(article);
+        }
+        public void DeleteArticle(Article article)
+        {
+            var id = article.Id;
+            articleRepo.Delete(article);
             if (!memoryCache.Contains("allNewsList")) return;
+            RemoveFromCache("article" + id);
             var linkerList = memoryCache.Get("allNewsList") as PagedList<int>;
             linkerList.Remove(id);
             linkerList.LinesCount--;
             linkerList.PageCount = (int)Math.Ceiling(linkerList.LinesCount / (double)ItemsOnPageCount);
             memoryCache.Set("allNewsList", linkerList, DateTime.Now.AddMinutes(60));
         }
+        public void RemoveFromCache(string key)
+        {
+            if (memoryCache.Contains(key)) memoryCache.Remove(key);
+        }
+
     }
 }
 

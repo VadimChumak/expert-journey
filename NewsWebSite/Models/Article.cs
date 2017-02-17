@@ -19,6 +19,7 @@ namespace NewsWebSite.Models
         public virtual DateTime CreateDate { get; set; }
         public virtual DateTime LastUpdateDate { get; set; }
         public virtual int UserId { get; set; }
+        public virtual string Url { get; set; }
 
         public virtual bool IsDeleted { get; set; }
         private ISet<Tag> tags = new HashSet<Tag>();
