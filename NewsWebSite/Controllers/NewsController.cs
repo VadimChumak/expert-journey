@@ -311,18 +311,18 @@ namespace NewsWebSite.Controllers
                 //articleRepository.Delete(article);
                 articleService.DeleteArticle(article);
             }
-            return View("Restore", id));
+            return View("Restore", id);
         }
 
         [Authorize]
         [HttpGet]
         public ActionResult Restore(int id)
         {
-            var authorId = repo.GetUserId(id);
+            var authorId = articleRepository.GetUserId(id);
             if (authorId == User.Identity.GetUserId<int>())
             {
-                var article = repo.GetItem(id);
-                repo.Restore(article);
+                var article = articleRepository.GetItem(id);
+                articleRepository.Restore(article);
                 return View("Article", new ArticleForView(article));
             }
             return View("Index");
