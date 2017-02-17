@@ -279,16 +279,33 @@ namespace NewsWebSite.Controllers
             return RedirectToAction("Article", new { Title = edited.Title, Id = edited.Id });
         }
 
+      
+
+        [HttpGet]
         [Authorize]
-        public ActionResult Delete(int id)
+        public ActionResult Delete(int articleid)
+        {
+            var authorId = repo.GetUserId(articleid);
+            if (authorId == User.Identity.GetUserId<int>())
+            {
+                var article = repo.GetItem(articleid);
+                repo.Delete(article);
+            }
+            return View("Restore", articleid);
+        }
+
+        [Authorize]
+        [HttpGet]
+        public ActionResult Restore(int id)
         {
             var authorId = repo.GetUserId(id);
             if (authorId == User.Identity.GetUserId<int>())
             {
                 var article = repo.GetItem(id);
-                repo.Delete(article);
+                repo.Restore(article);
+                return View("Article", new ArticleForView(article));
             }
-            return RedirectToAction("Index", "News");
+            return View("Index");
         }
         #region ForAjaxRequests
 

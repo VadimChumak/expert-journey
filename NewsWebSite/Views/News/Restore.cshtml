@@ -1,0 +1,8 @@
+﻿@model int
+@{
+    Layout = "~/Views/Shared/Lay.cshtml";
+}
+<h3>Эта статья была удалена</h3>
+<h4>Восстановить удаленную статью?</h4>
+<center><a href="@Url.Action("Restore", new { Id = Model })" class="btn" style="margin-top:15px;margin-left:15px"><i class="material-icons">Да</i></a>
+<a href="http://newswebsitet3.azurewebsites.net/" class="btn" style="margin-top:15px;margin-left:15px"><i class="material-icons">Нет</i></a></center>

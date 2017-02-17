@@ -592,6 +592,8 @@
     <Content Include="Views\Account\Notifications.cshtml" />
     <Content Include="Scripts\masonry.pkgd.min.js" />
     <Content Include="Views\Account\ChangeImage.cshtml" />
+    <Content Include="Views\News\ArticleDeleted.cshtml" />
+    <Content Include="Views\News\Restore.cshtml" />
   </ItemGroup>
   <ItemGroup>
     <Folder Include="App_Data\" />

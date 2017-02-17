@@ -16,7 +16,7 @@
                     @if (Model.Editable)
                     {
                         <a href="@Url.Action("EditArticle", new { Id = Model.Id })" class="btn" style="margin-top:15px;margin-left:15px"><i class="material-icons">edit</i></a>
-                        <a href="@Url.Action("Delete", new { Id = Model.Id })" class="btn" style="margin-top:15px;margin-left:15px"><i class="material-icons">delete</i></a>
+                        <a href="@Url.Action("Delete", new { articleid = Model.Id })" class="btn" style="margin-top:15px;margin-left:15px"><i class="material-icons">delete</i></a>
                     }
                 </div>
                 <div class="card-content">
